@@ -1,0 +1,18 @@
+# Build binaries
+hopbits
+*.exe
+*.test
+*.out
+bin/
+dist/
+
+# Local environment & credentials
+*.env
+.env*
+credentials
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

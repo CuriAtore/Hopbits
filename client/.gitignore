@@ -1,0 +1,25 @@
+# Build binaries
+hopbits-agent
+hopbits-docker
+hopbits-release
+*.exe
+*.test
+*.out
+bin/
+dist/
+
+# Local runtime state & environment files
+devdata/
+pending/
+*.env
+.env*
+*.key
+state.json
+traffic.json
+jobs.log
+
+# OS & editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

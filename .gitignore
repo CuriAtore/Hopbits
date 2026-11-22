@@ -1,0 +1,8 @@
+hopbits-agent
+hopbits
+*.exe
+*.key
+*.env
+devdata/
+dist/
+.DS_Store

@@ -1,0 +1,25 @@
+# Documentation and Docker files
+*.md
+Dockerfile*
+.dockerignore
+
+# Tests and build outputs
+*_test.go
+bin/
+devdata/
+tmp/
+*.exe
+*.test
+
+# Local runtime state / secrets
+*.key
+state.json
+traffic.json
+jobs.log
+pending/
+
+# Editor/OS files
+.git/
+.vscode/
+.idea/
+.DS_Store
