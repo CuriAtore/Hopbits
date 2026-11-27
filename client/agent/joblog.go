@@ -24,16 +24,15 @@ const (
 	outcomeNotRun = "NOT_RUN"
 )
 
-// jobRecord is one line of dataDir/jobs.log. It holds the target only as
-// the job carried it, never an address the node resolved or connected to.
+// jobRecord is one line of dataDir/jobs.log. Target hostnames and addresses
+// are omitted so local node logs never accumulate customer target lists.
 type jobRecord struct {
-	Time       time.Time `json:"time"`
-	JobID      string    `json:"job_id"`
-	Attempt    uint32    `json:"attempt"`
-	Kind       string    `json:"kind"`
-	TargetHost string    `json:"target_host"`
-	Outcome    string    `json:"outcome"`
-	Error      string    `json:"error,omitempty"`
+	Time    time.Time `json:"time"`
+	JobID   string    `json:"job_id"`
+	Attempt uint32    `json:"attempt"`
+	Kind    string    `json:"kind"`
+	Outcome string    `json:"outcome"`
+	Error   string    `json:"error,omitempty"`
 }
 
 // jobLog keeps the last jobLogKeep jobs as JSON lines.
@@ -64,6 +63,11 @@ func openJobLog(dataDir string) (*jobLog, error) {
 	if n := len(l.recs); n > jobLogKeep {
 		l.recs = append([]jobRecord(nil), l.recs[n-jobLogKeep:]...)
 	}
+	if bytes.Contains(b, []byte(`"target_host"`)) {
+		if err := l.rewriteLocked(); err != nil {
+			return nil, err
+		}
+	}
 	return l, nil
 }
 
@@ -75,6 +79,10 @@ func (l *jobLog) add(r jobRecord) error {
 	if n := len(l.recs); n > jobLogKeep {
 		l.recs = append([]jobRecord(nil), l.recs[n-jobLogKeep:]...)
 	}
+	return l.rewriteLocked()
+}
+
+func (l *jobLog) rewriteLocked() error {
 	var buf bytes.Buffer
 	enc := json.NewEncoder(&buf)
 	for _, rec := range l.recs {

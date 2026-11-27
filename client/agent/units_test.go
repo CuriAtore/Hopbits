@@ -310,7 +310,7 @@ func TestJobLogKeepsTheLast100(t *testing.T) {
 		t.Fatal(err)
 	}
 	for i := range 150 {
-		rec := jobRecord{Time: t0, JobID: fmt.Sprint(i), Kind: "fake", TargetHost: "host.example", Outcome: "OK"}
+		rec := jobRecord{Time: t0, JobID: fmt.Sprint(i), Kind: "fake", Outcome: "OK"}
 		if err := l.add(rec); err != nil {
 			t.Fatal(err)
 		}
@@ -338,6 +338,29 @@ func TestJobLogKeepsTheLast100(t *testing.T) {
 	}
 	if recs := l2.records(); len(recs) != jobLogKeep || recs[0].JobID != "50" {
 		t.Fatalf("reloaded %d records", len(recs))
+	}
+}
+
+func TestJobLogScrubsLegacyTargetHostOnOpen(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, jobLogFileName)
+	legacy := `{"time":"2026-11-27T00:00:00Z","job_id":"j-legacy","attempt":1,"kind":"http","target_host":"secret-client.example","outcome":"OK"}` + "\n"
+	if err := os.WriteFile(path, []byte(legacy), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	l, err := openJobLog(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if recs := l.records(); len(recs) != 1 || recs[0].JobID != "j-legacy" || recs[0].Outcome != "OK" {
+		t.Fatalf("unexpected records after scrub: %+v", recs)
+	}
+	scrubbed, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(scrubbed), "secret-client.example") || strings.Contains(string(scrubbed), "target_host") {
+		t.Fatalf("legacy target_host was not scrubbed on open: %s", string(scrubbed))
 	}
 }
 

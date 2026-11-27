@@ -438,17 +438,16 @@ func (s *session) refuse(job *nodev1.Job, code nodev1.ErrorCode) {
 	s.a.recordJob(job, outcomeNotRun, codeName(code))
 }
 
-// recordJob writes a job to the operator's job log and the agent's log,
-// naming the target only as the job carried it.
+// recordJob writes a job's id, kind, outcome and error code to the operator's
+// job log and the agent's stdout log without recording the target host or IP.
 func (a *Agent) recordJob(job *nodev1.Job, outcome, code string) {
 	rec := jobRecord{
-		Time:       a.now().UTC(),
-		JobID:      job.GetJobId(),
-		Attempt:    job.GetAttempt(),
-		Kind:       job.GetKind(),
-		TargetHost: job.GetTarget().GetHost(),
-		Outcome:    outcome,
-		Error:      code,
+		Time:    a.now().UTC(),
+		JobID:   job.GetJobId(),
+		Attempt: job.GetAttempt(),
+		Kind:    job.GetKind(),
+		Outcome: outcome,
+		Error:   code,
 	}
 	if err := a.jobLog.add(rec); err != nil {
 		a.log.Warn("cannot write the job log", "err", err)
@@ -458,5 +457,5 @@ func (a *Agent) recordJob(job *nodev1.Job, outcome, code string) {
 		msg = "job refused"
 	}
 	a.log.Info(msg, "job_id", rec.JobID, "attempt", rec.Attempt, "kind", rec.Kind,
-		"target_host", rec.TargetHost, "outcome", rec.Outcome, "error", rec.Error)
+		"outcome", rec.Outcome, "error", rec.Error)
 }

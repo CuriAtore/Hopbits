@@ -330,7 +330,10 @@ func TestWelcomeTLSExporter(t *testing.T) {
 
 func TestJobProducesSignedResult(t *testing.T) {
 	h := newHarness(t, false)
-	r := h.start(h.config(), nil)
+	logs := &syncBuffer{}
+	cfg := h.config()
+	cfg.Logger = slogTo(logs)
+	r := h.start(cfg, nil)
 	gc := h.gw.accept(t)
 	hello := h.gw.establish(t, gc)
 	nodeID := h.nodeID(r)
@@ -376,8 +379,18 @@ func TestJobProducesSignedResult(t *testing.T) {
 		t.Fatalf("gate admitted %d and closed %d leases, want 1 and 1", g.admitted, g.closed)
 	}
 	recs := r.a.jobLog.records()
-	if len(recs) != 1 || recs[0].JobID != "job-1" || recs[0].Outcome != "OK" || recs[0].TargetHost != "probe-target.example" {
+	if len(recs) != 1 || recs[0].JobID != "job-1" || recs[0].Outcome != "OK" {
 		t.Fatalf("job log %+v", recs)
+	}
+	rawJobLog, err := os.ReadFile(filepath.Join(h.dir, jobLogFileName))
+	if err != nil {
+		t.Fatalf("read jobs.log: %v", err)
+	}
+	if strings.Contains(string(rawJobLog), "probe-target.example") || strings.Contains(string(rawJobLog), "target_host") {
+		t.Fatalf("jobs.log leaked target host: %s", string(rawJobLog))
+	}
+	if strings.Contains(logs.String(), "probe-target.example") || strings.Contains(logs.String(), "target_host") {
+		t.Fatalf("agent stdout log leaked target host: %s", logs.String())
 	}
 }
 

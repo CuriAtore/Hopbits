@@ -24,7 +24,8 @@ made to send, and the `hopbits-agent` program.
 - The node signs each **result**, stores it on disk and resends it until the
   gateway acknowledges it.
 - It keeps a local log of its **last 100 jobs** (`jobs.log` in the data
-  directory) naming each job's kind, target host, outcome and error.
+  directory) naming each job's id, kind, outcome and error, without saving
+  target hostnames or IP addresses.
 
 ### The measurements
 
@@ -128,7 +129,7 @@ The data directory holds:
 - `state.json`: reconnect windows and verified key revocations.
 - `traffic.json`: persisted UTC day traffic counter for `HOPBITS_DAILY_MB`.
 - `pending/`: signed results not yet acknowledged (at most 500, kept 24 h).
-- `jobs.log`: the last 100 jobs.
+- `jobs.log`: the last 100 jobs (timestamp, job id, kind, outcome and error, without target hostnames or IP addresses).
 - `bin/hopbits-agent`: staged signed release binary written by self-update.
 
 Stop the agent with Ctrl+C or SIGTERM: it stops taking jobs, cancels the
@@ -183,7 +184,7 @@ A release build compiles in the production root keys (the `RELEASE_ROOTS` value 
 [`Dockerfile`](Dockerfile)) and sets its version:
 
 ```sh
-go build -trimpath -ldflags "-s -w -X main.version=0.2.5 -X main.releaseRootsCSV=$HOPBITS_RELEASE_ROOTS" -o hopbits-agent ./cmd/hopbits-agent
+go build -trimpath -ldflags "-s -w -X main.version=0.2.6 -X main.releaseRootsCSV=$HOPBITS_RELEASE_ROOTS" -o hopbits-agent ./cmd/hopbits-agent
 ```
 
 A build without production root keys refuses to start, and a node that took such a release from
@@ -196,7 +197,7 @@ and published through the signed update manifest verified against the compiled `
 Build the minimal static image from the `client/` root:
 
 ```sh
-docker build -t hopbits-agent:0.2.5 --build-arg VERSION=0.2.5 .
+docker build -t hopbits-agent:0.2.6 --build-arg VERSION=0.2.6 .
 ```
 
 Prepare an environment file readable only by the owner (if enrolling a fleet node or setting options):
@@ -218,7 +219,7 @@ docker run -d --name hopbits \
   --restart always \
   --env-file hopbits.env \
   -v hopbits:/var/lib/hopbits \
-  hopbits-agent:0.2.5
+  hopbits-agent:0.2.6
 ```
 
 Notes for containerized Linux runs:
