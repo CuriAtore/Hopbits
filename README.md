@@ -6,7 +6,7 @@ Open-source software that powers the [Hopbits](https://hopbits.io) global networ
 
 | Directory | Version | Description |
 | :--- | :--- | :--- |
-| [`client/`](client/) | `hopbits-agent v0.2.5` | The Linux and Docker measurement node agent (`http`, `tcp_connect`, `icmp_ping`, `dns`, `traceroute`, `mtr`), wire protocol, and compiled safety layer (`--cap-drop ALL`, RFC 1918 / metadata / own-subnet denial, Hop-1 operator subnet redaction, Ed25519 job & release verification). |
+| [`client/`](client/) | `hopbits-agent v0.2.6` | The Linux and Docker measurement node agent (`http`, `tcp_connect`, `icmp_ping`, `dns`, `traceroute`, `mtr`), wire protocol, and compiled safety layer (`--cap-drop ALL`, RFC 1918 / metadata / own-subnet denial, Hop-1 operator subnet redaction, target-free local job logging, Ed25519 job & release verification). |
 | [`cli/`](cli/) | `hopbits v0.2.0` | The developer CLI for running global measurements (`http`, `tcp_connect`, `icmp_ping`, `dns`, `traceroute`, `mtr`), estimating credit costs, and managing recurring checks as code. |
 
 ## Documentation
